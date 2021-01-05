@@ -1923,6 +1923,7 @@ Mavlink_vehicle::Mission_upload::On_mission_ack(
         mavlink::Message<mavlink::MESSAGE_ID::MISSION_ACK>::Ptr message)
 {
     VEHICLE_LOG_INF(vehicle, "MISSION ACK: %s", message->payload.Dump().c_str());
+//    // ACSL Bug: ACSL can not set correct system id, component id
 //    if (message->payload->target_component != vehicle.vsm_component_id ||
 //        message->payload->target_system != vehicle.vsm_system_id) {
 //        /* Not for us, ignore. */
