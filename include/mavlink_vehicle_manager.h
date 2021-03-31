@@ -78,6 +78,21 @@ protected:
             ugcs::vsm::Optional<std::string> custom_serial_number =
                     ugcs::vsm::Optional<std::string>());
 
+    /** Create new or update existing vehicles based on received serial number id
+     * and type of the vehicle. */
+    virtual void
+    On_serial_number_id(
+            ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::sensyn::MESSAGE_ID::SERIAL_NUMBER_ID,
+            ugcs::vsm::mavlink::sensyn::Extension>::Ptr message,
+            ugcs::vsm::Mavlink_stream::Ptr mav_stream) = 0;
+
+    /** Create new or update existing vehicles based on received system id
+     * and type of the vehicle. */
+    virtual void
+    On_heartbeat(
+            ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::HEARTBEAT>::Ptr message,
+            ugcs::vsm::Mavlink_stream::Ptr mav_stream);
+
     /** Default model name to use in UCS system id calculation. */
     std::string default_model_name;
 
@@ -104,52 +119,7 @@ protected:
     };
 
     /** Managed vehicles. */
-    std::unordered_map<int, Vehicle_ctx> vehicles;
-
-private:
-    /** Maximum length of accumulated raw line. */
-    static constexpr size_t MAX_RAW_LINE = 1024;
-
-    bool
-    On_timer();
-
-    /** Read config and create vehicles. */
-    void
-    Load_vehicle_config();
-
-    void
-    Create_vehicle_wrapper(
-            ugcs::vsm::Mavlink_stream::Ptr mav_stream,
-            uint8_t system_id,
-            uint8_t component_id);
-
-    /** Prototcol detection polling interval. */
-    const std::chrono::milliseconds TIMER_INTERVAL = std::chrono::milliseconds(500);
-
-    /** Detector should receive at least this much bytes to fail detection. */
-    const unsigned int MAX_UNDETECTED_BYTES = 300;
-
-    /** Detector should wait this much milliseconds to fail detection.
-     * The interval is so big because APM takes ~4 seconds to boot when connected directly to USB*/
-    const std::chrono::milliseconds DETECTION_TIMEOUT_DEFAULT = std::chrono::milliseconds(6000);
-
-    /** Timeout is extended to this value when raw data patterns are matched. */
-    const std::chrono::milliseconds EXTENDED_TIMEOUT = std::chrono::milliseconds(5000);
-
-    /** Handler for the event of protocol transition to OPERATIONAL state. */
-    typedef ugcs::vsm::Callback_proxy<void> Ready_handler;
-
-    /** Preconfigured serial numbers and model names:
-     * system id maps to [model name, serial number]. */
-    std::unordered_map<int, std::pair<std::string, std::string> > preconfigured;
-
-    // This worker handles vehicle Creation/Enabling
-    ugcs::vsm::Request_worker::Ptr manager_worker;
-
-    // All vehicle connection readers and Vehicles will use this thread.
-    // This is to support multiple vehicles on one connection.
-    ugcs::vsm::Request_worker::Ptr vehicle_worker;
-    ugcs::vsm::Request_processor::Ptr vehicle_processor;
+    std::unordered_map<std::string, Vehicle_ctx> vehicles;
 
     /** Trivial detector state. */
     class Detector_ctx {
@@ -199,11 +169,58 @@ private:
     std::unordered_map<ugcs::vsm::Mavlink_stream::Ptr, Detector_ctx> detectors;
     std::mutex detector_mutex;  // Protect access to detectors.
 
-    /** Watchdog timer for detection. */
-    ugcs::vsm::Timer_processor::Timer::Ptr watchdog_timer;
-
     /** Mission dump path. */
     ugcs::vsm::Optional<std::string> mission_dump_path;
+
+    // All vehicle connection readers and Vehicles will use this thread.
+    // This is to support multiple vehicles on one connection.
+    ugcs::vsm::Request_worker::Ptr vehicle_worker;
+    ugcs::vsm::Request_processor::Ptr vehicle_processor;
+
+    std::chrono::milliseconds detection_timeout = DETECTION_TIMEOUT_DEFAULT;
+
+    /** Prototcol detection polling interval. */
+    const std::chrono::milliseconds TIMER_INTERVAL = std::chrono::milliseconds(500);
+
+private:
+    /** Maximum length of accumulated raw line. */
+    static constexpr size_t MAX_RAW_LINE = 1024;
+
+    bool
+    On_timer();
+
+    /** Read config and create vehicles. */
+    void
+    Load_vehicle_config();
+
+    void
+    Create_vehicle_wrapper(
+            ugcs::vsm::Mavlink_stream::Ptr mav_stream,
+            uint8_t system_id,
+            uint8_t component_id);
+
+    /** Detector should receive at least this much bytes to fail detection. */
+    const unsigned int MAX_UNDETECTED_BYTES = 300;
+
+    /** Detector should wait this much milliseconds to fail detection.
+     * The interval is so big because APM takes ~4 seconds to boot when connected directly to USB*/
+    const std::chrono::milliseconds DETECTION_TIMEOUT_DEFAULT = std::chrono::milliseconds(6000);
+
+    /** Timeout is extended to this value when raw data patterns are matched. */
+    const std::chrono::milliseconds EXTENDED_TIMEOUT = std::chrono::milliseconds(5000);
+
+    /** Handler for the event of protocol transition to OPERATIONAL state. */
+    typedef ugcs::vsm::Callback_proxy<void> Ready_handler;
+
+    /** Preconfigured serial numbers and model names:
+     * system id maps to [model name, serial number]. */
+    std::unordered_map<int, std::pair<std::string, std::string> > preconfigured;
+
+    // This worker handles vehicle Creation/Enabling
+    ugcs::vsm::Request_worker::Ptr manager_worker;
+
+    /** Watchdog timer for detection. */
+    ugcs::vsm::Timer_processor::Timer::Ptr watchdog_timer;
 
     /** Patterns which extended detection timeout. */
     std::vector<std::regex> extension_patterns;
@@ -216,19 +233,10 @@ private:
     // COMPID for outgoing mavlink packets from VSM.
     int vsm_component_id = ugcs::vsm::mavlink::MAV_COMP_ID_ALL;
 
-    std::chrono::milliseconds detection_timeout = DETECTION_TIMEOUT_DEFAULT;
-
     void
     Write_to_vehicle_timed_out(
             const ugcs::vsm::Operation_waiter::Ptr& waiter,
             ugcs::vsm::Mavlink_stream::Weak_ptr mav_stream);
-
-    /** Create new or update existing vehicles based on received system id
-     * and type of the vehicle. */
-    void
-    On_heartbeat(
-            ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::HEARTBEAT>::Ptr message,
-            ugcs::vsm::Mavlink_stream::Ptr mav_stream);
 
     /** Raw data handler from Mavlink stream. */
     void

@@ -153,7 +153,7 @@ Mavlink_vehicle_manager::Default_mavlink_handler(
         }
     } else {
         // If message has target then send to that specific vehicle.
-        auto it = vehicles.find(target);
+        auto it = vehicles.find(std::to_string(target));
         if (it != vehicles.end()) {
             it->second.vehicle->Inject_message(message_id, sys, cmp, buf);
         }
@@ -298,7 +298,7 @@ Mavlink_vehicle_manager::Create_vehicle_wrapper(
         serial_number = std::to_string(system_id);
         model_name = default_model_name;
     }
-    auto it = vehicles.emplace(system_id, Vehicle_ctx()).first;
+    auto it = vehicles.emplace(std::to_string(system_id), Vehicle_ctx()).first;
 
     ugcs::vsm::Optional<std::string> custom_model_name;
     ugcs::vsm::Optional<std::string> custom_serial_number;
@@ -382,7 +382,7 @@ Mavlink_vehicle_manager::On_heartbeat(
             /* Signal transport_detector that this is not our protocol. */
             Transport_detector::Get_instance()->Protocol_not_detected(stream);
         } else {
-            auto it = vehicles.find(system_id);
+            auto it = vehicles.find(std::to_string(system_id));
             if (it == vehicles.end()) {
                 det_iter->second.frame_type = static_cast<mavlink::MAV_TYPE>(message->payload->type.Get());
                 lock.unlock();
@@ -558,6 +558,16 @@ Mavlink_vehicle_manager::Handle_new_connection(
     mav_stream->Bind_decoder_demuxer();
 
     LOG_INFO("New connection [%s:%d].", name.c_str(), baud);
+
+    mav_stream->Get_demuxer().
+        Register_handler<mavlink::sensyn::MESSAGE_ID::SERIAL_NUMBER_ID, mavlink::sensyn::Extension>(
+        Mavlink_demuxer::Make_handler<mavlink::sensyn::MESSAGE_ID::SERIAL_NUMBER_ID, mavlink::sensyn::Extension>(
+            &Mavlink_vehicle_manager::On_serial_number_id,
+            Shared_from_this(),
+            mav_stream),
+            Mavlink_demuxer::SYSTEM_ID_ANY,
+            Mavlink_demuxer::COMPONENT_ID_ANY,
+            Shared_from_this());
 
     // Register HB handler which is going to get processed in manager_thread.
     // This means that each HB is processed twice: in vehicle and in here.

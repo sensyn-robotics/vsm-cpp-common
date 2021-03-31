@@ -366,7 +366,7 @@ protected:
     }
 
     static uint32_t
-    Get_mission_item_hash(const ugcs::vsm::mavlink::Pld_mission_item& msg);
+    Get_mission_item_hash(const ugcs::vsm::mavlink::Pld_mission_item_int& msg);
 
     // Generate QGC WPL format 110
     static std::string
@@ -911,14 +911,14 @@ protected:
         /** Handler for status text. */
         typedef ugcs::vsm::Callback_proxy<
                 void,
-                ugcs::vsm::mavlink::Pld_mission_item>
+                ugcs::vsm::mavlink::Pld_mission_item_int>
             Mission_item_handler;
 
         /** Convenience builder. */
         DEFINE_CALLBACK_BUILDER(
                 Make_mission_item_handler,
-                (ugcs::vsm::mavlink::Pld_mission_item),
-                (ugcs::vsm::mavlink::Pld_mission_item()));
+                (ugcs::vsm::mavlink::Pld_mission_item_int),
+                (ugcs::vsm::mavlink::Pld_mission_item_int()));
 
         /** Start waypoints reading. */
         void
@@ -939,7 +939,7 @@ protected:
         On_mission_ack(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::MISSION_ACK>::Ptr);
 
         void
-        On_item(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::MISSION_ITEM>::Ptr);
+        On_item(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::MISSION_ITEM_INT>::Ptr);
 
         /** Read waypoint count. */
         bool
@@ -1155,7 +1155,7 @@ protected:
 
         /** Mission item request. */
         void
-        On_mission_request(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::MISSION_REQUEST>::Ptr);
+        On_mission_request(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::MISSION_REQUEST_INT>::Ptr);
 
         /** Schedule timer for retry attempt. */
         void
@@ -1199,16 +1199,16 @@ protected:
         Reset();
 
         void
-        Add_item(const ugcs::vsm::mavlink::Pld_mission_item&);
+        Add_item(const ugcs::vsm::mavlink::Pld_mission_item_int&);
 
-        const ugcs::vsm::mavlink::Pld_mission_item*
+        const ugcs::vsm::mavlink::Pld_mission_item_int*
         Get_item_ref(int idx);
 
         int
         Get_item_count();
 
     private:
-        std::unordered_map<int, ugcs::vsm::mavlink::Pld_mission_item> items;
+        std::unordered_map<int, ugcs::vsm::mavlink::Pld_mission_item_int> items;
     };
 
     // Return true vehicle is navigating waypoints and current command is cmd.
@@ -1233,7 +1233,7 @@ protected:
      */
     friend class Ardupilot_vehicle;
     friend class Emulator_vehicle;
-    friend class Px4_vehicle;
+    friend class Acsl_vehicle;
     friend class Airmast_vehicle;
 
 private:

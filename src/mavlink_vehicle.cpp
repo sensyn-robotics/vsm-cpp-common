@@ -1154,7 +1154,7 @@ Mavlink_vehicle::Read_waypoints::Get_home_location()
     }
     items_total = 1;
     item_to_read = 0;
-    Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_ITEM>(
+    Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_ITEM_INT>(
         &Read_waypoints::On_item,
         this);
     retries = 1;
@@ -1182,7 +1182,7 @@ Mavlink_vehicle::Read_waypoints::On_count(
 
     VEHICLE_LOG_DBG(vehicle, "Reading of %zu waypoints...", items_total);
 
-    Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_ITEM>(
+    Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_ITEM_INT>(
         &Read_waypoints::On_item,
         this);
 
@@ -1196,7 +1196,7 @@ Mavlink_vehicle::Read_waypoints::On_count(
 
 void
 Mavlink_vehicle::Read_waypoints::On_item(
-        mavlink::Message<mavlink::MESSAGE_ID::MISSION_ITEM>::Ptr message)
+        mavlink::Message<mavlink::MESSAGE_ID::MISSION_ITEM_INT>::Ptr message)
 {
     if (message->payload->target_component != vehicle.vsm_component_id ||
         message->payload->target_system != vehicle.vsm_system_id) {
@@ -1873,7 +1873,7 @@ Mavlink_vehicle::Mission_upload::Enable()
 
     Dump_mission();
 
-    Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_REQUEST>(
+    Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_REQUEST_INT>(
         &Mission_upload::On_mission_request,
         this);
 
@@ -1923,11 +1923,12 @@ Mavlink_vehicle::Mission_upload::On_mission_ack(
         mavlink::Message<mavlink::MESSAGE_ID::MISSION_ACK>::Ptr message)
 {
     VEHICLE_LOG_INF(vehicle, "MISSION ACK: %s", message->payload.Dump().c_str());
-    if (message->payload->target_component != vehicle.vsm_component_id ||
-        message->payload->target_system != vehicle.vsm_system_id) {
-        /* Not for us, ignore. */
-        return;
-    }
+//    // ACSL Bug: ACSL can not set correct system id, component id
+//    if (message->payload->target_component != vehicle.vsm_component_id ||
+//        message->payload->target_system != vehicle.vsm_system_id) {
+//        /* Not for us, ignore. */
+//        return;
+//    }
     if (message->payload->type == mavlink::MAV_MISSION_RESULT::MAV_MISSION_ACCEPTED) {
         Call_next_action(true);
     } else if (message->payload->type == mavlink::MAV_MISSION_RESULT::MAV_MISSION_INVALID_SEQUENCE) {
@@ -1948,7 +1949,7 @@ Mavlink_vehicle::Mission_upload::On_mission_ack(
 
 void
 Mavlink_vehicle::Mission_upload::On_mission_request(
-        mavlink::Message<mavlink::MESSAGE_ID::MISSION_REQUEST>::Ptr message)
+        mavlink::Message<mavlink::MESSAGE_ID::MISSION_REQUEST_INT>::Ptr message)
 {
     /* There is a bug in APM which always sends target system and component
      * as 0 in mission request. So disable the check.
@@ -2060,14 +2061,14 @@ Mavlink_vehicle::Generate_wpl(const mavlink::Payload_list& messages, bool use_cr
     s << "QGC WPL 110" << crlf;
     int idx = 0;
     for (auto& i : messages) {
-        if (i->Get_id() == mavlink::MISSION_ITEM) {
+        if (i->Get_id() == mavlink::MISSION_ITEM_INT) {
             s << idx << '\t';
             if (idx) {
                 s << 0;
             } else {
                 s << 1;
             }
-            auto message = mavlink::Pld_mission_item::Create(i->Get_buffer());
+            auto message = mavlink::Pld_mission_item_int::Create(i->Get_buffer());
             s << '\t' << static_cast<int>((*message)->frame.Get());
             s << '\t' << (*message)->command.Get();
             s << '\t' << (*message)->param1.Get();
@@ -2088,7 +2089,7 @@ Mavlink_vehicle::Generate_wpl(const mavlink::Payload_list& messages, bool use_cr
 }
 
 uint32_t
-Mavlink_vehicle::Get_mission_item_hash(const mavlink::Pld_mission_item& msg)
+Mavlink_vehicle::Get_mission_item_hash(const mavlink::Pld_mission_item_int& msg)
 {
     Crc32 h;
     // Hash command ID.
@@ -2143,7 +2144,7 @@ Mavlink_vehicle::Mavlink_route::Reset()
 }
 
 void
-Mavlink_vehicle::Mavlink_route::Add_item(const mavlink::Pld_mission_item& mi)
+Mavlink_vehicle::Mavlink_route::Add_item(const mavlink::Pld_mission_item_int& mi)
 {
     items[mi->seq] = mi;
 }
@@ -2154,7 +2155,7 @@ Mavlink_vehicle::Mavlink_route::Get_item_count()
     return items.size();
 }
 
-const mavlink::Pld_mission_item*
+const mavlink::Pld_mission_item_int*
 Mavlink_vehicle::Mavlink_route::Get_item_ref(int idx)
 {
     auto i = items.find(idx);
