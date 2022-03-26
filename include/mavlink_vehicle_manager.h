@@ -32,6 +32,7 @@ protected:
             ugcs::vsm::Mavlink_demuxer::System_id system_id,
             ugcs::vsm::Mavlink_demuxer::Component_id component_id,
             ugcs::vsm::mavlink::MAV_TYPE type,
+            ugcs::vsm::mavlink::MAV_AUTOPILOT autopilot_type,
             ugcs::vsm::Mavlink_stream::Ptr stream,
             ugcs::vsm::Socket_address::Ptr peer_addr,
             ugcs::vsm::Optional<std::string> mission_dump_path,
