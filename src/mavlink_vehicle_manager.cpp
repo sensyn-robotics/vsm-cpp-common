@@ -286,6 +286,7 @@ Mavlink_vehicle_manager::Create_vehicle_wrapper(
     std::string serial_number;
     std::string model_name;
     auto frame_type = mavlink::MAV_TYPE::MAV_TYPE_QUADROTOR;
+    auto autopilot_type = mavlink::MAV_AUTOPILOT::MAV_AUTOPILOT_GENERIC;
     bool is_preconfigured = false;
     ugcs::vsm::Socket_address::Ptr peer_addr = nullptr;
 
@@ -310,6 +311,7 @@ Mavlink_vehicle_manager::Create_vehicle_wrapper(
             custom_model_name = det_iter->second.custom_model;
             custom_serial_number = det_iter->second.custom_serial;
             frame_type = det_iter->second.frame_type;
+            autopilot_type = det_iter->second.autopilot_type;
             peer_addr = det_iter->second.peer_addr;
         }
     }
@@ -333,6 +335,7 @@ Mavlink_vehicle_manager::Create_vehicle_wrapper(
             system_id,
             component_id,
             frame_type,
+            autopilot_type,
             mav_stream,
             peer_addr,
             mission_dump_path,
