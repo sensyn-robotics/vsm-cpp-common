@@ -27,7 +27,8 @@ public:
         CUSTOM = 0,     // Use this when creating mavlink vehicle not in the list.
         EMULATOR = 1,
         ARDUPILOT = 2,
-        PX4 = 3
+        PX4 = 3,
+        DJI = 4
     };
 
     // Constructor for command processor.
