@@ -489,6 +489,12 @@ Mavlink_vehicle_manager::On_stream_read(
     if (mav_stream->Get_stream()) {
         if (result == Io_result::OK) {
             mav_stream->Get_decoder().Decode(buffer);
+            if (mav_stream->Get_decoder().Is_mavlink2()
+                && !mav_stream->Is_mavlink_v2())
+            {
+                mav_stream->Set_mavlink_v2(true);
+                LOG_DEBUG("Enabled MAVLINK2 on received mavlink2 stream data.");
+            }
             Schedule_next_read(mav_stream);
         } else {
             /* Stream error during detection. */
