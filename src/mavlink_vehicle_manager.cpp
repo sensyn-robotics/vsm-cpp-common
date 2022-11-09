@@ -489,7 +489,7 @@ Mavlink_vehicle_manager::On_stream_read(
     if (mav_stream->Get_stream()) {
         if (result == Io_result::OK) {
             mav_stream->Get_decoder().Decode(buffer);
-            if (mav_stream->Get_decoder().Is_mavlink_v2()
+            if (mav_stream->Get_decoder().Get_mavlink_version() == Mavlink_decoder::MavlinkVersion::V2
                 && !mav_stream->Is_mavlink_v2())
             {
                 mav_stream->Set_mavlink_v2(true);
