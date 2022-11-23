@@ -2174,17 +2174,20 @@ Mavlink_vehicle::Is_vehicle_heartbeat_valid(
         ||  message->payload->type == mavlink::MAV_TYPE_GIMBAL
         ||  message->payload->type == mavlink::MAV_TYPE_ANTENNA_TRACKER
         ||  message->payload->type == mavlink::MAV_TYPE_ADSB) {
+        LOG_INFO("message->payload->type is invlaid %d", static_cast<int>(message->payload->type));
         return false;
     }
 
     // Ignore HB from components other than autopilots.
     if (message->Get_sender_component_id() != mavlink::MAV_COMP_ID_AUTOPILOT1) {
+        LOG_INFO("MAV_COMP_ID_AUTOPILOT1 is invlaid %d", static_cast<int>(message->Get_sender_component_id()));
         return false;
     }
 
     // Ignore HB from generic autopilot with generic frame
     if (    message->payload->autopilot.Get() == mavlink::MAV_AUTOPILOT_GENERIC
         &&  message->payload->type == mavlink::MAV_TYPE_GENERIC) {
+        LOG_INFO("message->payload->autopilot is invlaid %d:%d", static_cast<int>(message->payload->autopilot.Get()), static_cast<int>(message->payload->type));
         return false;
     }
 
