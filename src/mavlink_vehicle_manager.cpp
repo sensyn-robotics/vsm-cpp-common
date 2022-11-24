@@ -533,7 +533,7 @@ Mavlink_vehicle_manager::On_timer()
             ||  ctx.timeout == 0) {
             auto stream = mav_stream->Get_stream();
             if (stream && !stream->Is_closed()) {
-                LOG_INFO("On_timer bytes_received=%ld bad_length=%ld handled=%ld no_handler=%ld timeout=%d", stats.bytes_received, stats.bad_length, stats.handled, stats.no_handler, ctx.timeout);
+                LOG_INFO("On_timer bytes_received=%ld bad_checksum=%ld bad_length=%ld handled=%ld no_handler=%ld unknown_id=%ld stx_syncs=%ld timeout=%d", stats.bytes_received, stats.bad_checksum ,stats.bad_length, stats.handled, stats.no_handler, stats.unknown_id, stats.stx_syncs, ctx.timeout);
                 LOG_INFO("Mavlink not detected on stream [%s].", stream->Get_name().c_str());
                 stream->Close();
             }
