@@ -1263,7 +1263,7 @@ Mavlink_vehicle::Read_waypoints::Get_next_item()
     } else {
         if (retries) {
             retries--;
-            mavlink::Pld_mission_request req;
+            mavlink::Pld_mission_request_int req;
             Fill_target_ids(req);
             req->seq = item_to_read;
             Send_message(req);
