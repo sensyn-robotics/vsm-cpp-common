@@ -1873,7 +1873,7 @@ Mavlink_vehicle::Mission_upload::Enable()
 
     Dump_mission();
 
-    Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_REQUEST_INT>(
+    Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_REQUEST>(
         &Mission_upload::On_mission_request,
         this);
 
