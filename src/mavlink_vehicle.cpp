@@ -1949,7 +1949,7 @@ Mavlink_vehicle::Mission_upload::On_mission_ack(
 
 void
 Mavlink_vehicle::Mission_upload::On_mission_request(
-        mavlink::Message<mavlink::MESSAGE_ID::MISSION_REQUEST_INT>::Ptr message)
+        mavlink::Message<mavlink::MESSAGE_ID::MISSION_REQUEST>::Ptr message)
 {
     /* There is a bug in APM which always sends target system and component
      * as 0 in mission request. So disable the check.

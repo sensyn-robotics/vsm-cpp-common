@@ -1156,7 +1156,7 @@ protected:
 
         /** Mission item request. */
         void
-        On_mission_request(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::MISSION_REQUEST_INT>::Ptr);
+        On_mission_request(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::MISSION_REQUEST>::Ptr);
 
         /** Schedule timer for retry attempt. */
         void
