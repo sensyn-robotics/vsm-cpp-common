@@ -1154,7 +1154,13 @@ protected:
         void
         On_mission_ack(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::MISSION_ACK>::Ptr);
 
+        /** Mission item request int. */
+        void
+        On_mission_request_int(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::MISSION_REQUEST_INT>::Ptr);
+
+
         /** Mission item request. */
+        // Arducopter can't send MISSION_REQUEST_INT, So send MISSION_ITEM_INT in response to MISSION_REQUEST messages for ardupilot
         void
         On_mission_request(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::MISSION_REQUEST>::Ptr);
 
