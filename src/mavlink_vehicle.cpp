@@ -1263,7 +1263,7 @@ Mavlink_vehicle::Read_waypoints::Get_next_item()
     } else {
         if (retries) {
             retries--;
-            mavlink::Pld_mission_request req;
+            mavlink::Pld_mission_request_int req;
             Fill_target_ids(req);
             req->seq = item_to_read;
             Send_message(req);
@@ -1874,6 +1874,10 @@ Mavlink_vehicle::Mission_upload::Enable()
     Dump_mission();
 
     Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_REQUEST_INT>(
+        &Mission_upload::On_mission_request_int,
+        this);
+
+    Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_REQUEST>(
         &Mission_upload::On_mission_request,
         this);
 
@@ -1947,8 +1951,19 @@ Mavlink_vehicle::Mission_upload::On_mission_ack(
     }
 }
 
+
+/** Mission item request. */
+// Arducopter can't send MISSION_REQUEST_INT, So send MISSION_ITEM_INT in response to MISSION_REQUEST messages for ardupilot
 void
 Mavlink_vehicle::Mission_upload::On_mission_request(
+        mavlink::Message<mavlink::MESSAGE_ID::MISSION_REQUEST>::Ptr message)
+{
+    auto message_int = mavlink::Message<mavlink::MESSAGE_ID::MISSION_REQUEST_INT>::Create(0, 0, 0, message->payload.Get_buffer());
+    On_mission_request_int(message_int);
+}
+
+void
+Mavlink_vehicle::Mission_upload::On_mission_request_int(
         mavlink::Message<mavlink::MESSAGE_ID::MISSION_REQUEST_INT>::Ptr message)
 {
     /* There is a bug in APM which always sends target system and component
