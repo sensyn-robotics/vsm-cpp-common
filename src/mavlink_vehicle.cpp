@@ -1261,6 +1261,10 @@ Mavlink_vehicle::Read_waypoints::Get_next_item()
         Send_message(ack);
         Call_next_action(true);
     } else {
+        if (paused) {
+            LOG_INFO("Read_waypoints Get_next_item is paused!");
+            return false;
+        }
         if (retries) {
             retries--;
             mavlink::Pld_mission_request_int req;
@@ -1291,6 +1295,18 @@ Mavlink_vehicle::Read_waypoints::Cancel_timer()
         timer->Cancel();
         timer = nullptr;
     }
+}
+
+void
+Mavlink_vehicle::Read_waypoints::Pause()
+{
+    paused = true;
+}
+
+void
+Mavlink_vehicle::Read_waypoints::Resume()
+{
+    paused = false;
 }
 
 void

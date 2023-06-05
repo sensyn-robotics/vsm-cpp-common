@@ -956,6 +956,11 @@ protected:
         void
         Cancel_timer();
 
+        void Pause();
+
+        void Resume();
+
+        bool paused;
         /** Number of waypoints remnainign to be read. */
         size_t items_total;
 
