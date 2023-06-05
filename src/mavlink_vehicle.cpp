@@ -1139,6 +1139,9 @@ Mavlink_vehicle::Read_waypoints::Enable()
     if (timer) {
         return; // in progress.
     }
+    // resume sending MISSION_REQUEST_INT
+    Resume();
+
     Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_COUNT>(
         &Read_waypoints::On_count,
         this);
@@ -1261,8 +1264,10 @@ Mavlink_vehicle::Read_waypoints::Get_next_item()
         Send_message(ack);
         Call_next_action(true);
     } else {
+        // JPDrone will send MISSION_ACK(MAV_MISSION_DENIED = 14) for MISSION_REQUEST_INT when mission uploading(MISSION_ITEM_INT)
+        // So pause sending MISSION_REQUEST_INT when mission uploading(MISSION_ITEM_INT)
         if (paused) {
-            LOG_INFO("Read_waypoints Get_next_item is paused!");
+            LOG_INFO("Read_waypoints MISSION_REQUEST_INT is paused in MISSION_ITEM_INT uploading!");
             return false;
         }
         if (retries) {
