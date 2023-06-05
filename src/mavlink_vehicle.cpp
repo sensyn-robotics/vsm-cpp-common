@@ -1139,9 +1139,6 @@ Mavlink_vehicle::Read_waypoints::Enable()
     if (timer) {
         return; // in progress.
     }
-    // resume sending MISSION_REQUEST_INT
-    Resume();
-
     Register_mavlink_handler<mavlink::MESSAGE_ID::MISSION_COUNT>(
         &Read_waypoints::On_count,
         this);
