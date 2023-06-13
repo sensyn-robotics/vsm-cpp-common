@@ -960,7 +960,6 @@ protected:
 
         void Resume();
 
-        bool paused;
         /** Number of waypoints remnainign to be read. */
         size_t items_total;
 
@@ -973,6 +972,8 @@ protected:
 
         /** Retry timer. */
         ugcs::vsm::Timer_processor::Timer::Ptr timer;
+    private:
+        volatile bool paused = false;
     } read_waypoints;
 
     class Telemetry: public Activity {
