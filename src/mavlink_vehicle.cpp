@@ -1261,6 +1261,13 @@ Mavlink_vehicle::Read_waypoints::Get_next_item()
         Send_message(ack);
         Call_next_action(true);
     } else {
+        // JPDrone will send MISSION_ACK(MAV_MISSION_DENIED = 14) for Get_home_location(MISSION_REQUEST_INT)
+        // when mission uploading(MISSION_ITEM_INT)
+        // So pause sending Get_home_location(MISSION_REQUEST_INT) when mission uploading(MISSION_ITEM_INT)
+        if (paused) {
+            LOG_INFO("Read_waypoints MISSION_REQUEST_INT is paused in MISSION_ITEM_INT uploading!");
+            return false;
+        }
         if (retries) {
             retries--;
             mavlink::Pld_mission_request_int req;
@@ -1291,6 +1298,18 @@ Mavlink_vehicle::Read_waypoints::Cancel_timer()
         timer->Cancel();
         timer = nullptr;
     }
+}
+
+void
+Mavlink_vehicle::Read_waypoints::Pause()
+{
+    paused = true;
+}
+
+void
+Mavlink_vehicle::Read_waypoints::Resume()
+{
+    paused = false;
 }
 
 void
