@@ -5,6 +5,7 @@
 #include <mavlink_vehicle.h>
 #include <fstream>
 #include <sstream>
+#include <stdint.h>
 
 constexpr std::chrono::seconds Mavlink_vehicle::WRITE_TIMEOUT;
 constexpr int Mavlink_vehicle::Telemetry::ESTIMATION_RATE_MULTIPLIER;
@@ -1728,6 +1729,9 @@ Mavlink_vehicle::Telemetry::On_gps_raw(
 
     if (message->payload->satellites_visible != 255) {
         vehicle.t_satellite_count->Set_value(message->payload->satellites_visible.Get());
+    }
+    if (message->payload->alt_ellipsoid != INT32_MIN) {
+        vehicle.t_altitude_ellipsoid->Set_value(message->payload->alt_ellipsoid / 1000.0); // convert mm -> m
     }
     switch (message->payload->fix_type) {
     case mavlink::GPS_FIX_TYPE_NO_GPS:
