@@ -1057,7 +1057,7 @@ protected:
         void
         On_vibration(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::VIBRATION>::Ptr);
 
-        void
+        virtual void
         On_gps_raw(ugcs::vsm::mavlink::Message<ugcs::vsm::mavlink::MESSAGE_ID::GPS_RAW_INT>::Ptr);
 
         void
