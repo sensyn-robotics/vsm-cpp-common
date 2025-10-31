@@ -1731,6 +1731,8 @@ Mavlink_vehicle::Telemetry::On_gps_raw(
         vehicle.t_satellite_count->Set_value(message->payload->satellites_visible.Get());
     }
     // FlightEdge will send INT32_MIN as invalid ellipsoid value when RTK not enabled.
+    // Debug old FlightEdge alt_ellipsoid value
+    VEHICLE_LOG_INF(vehicle, "alt_ellipsoid [%d]", message->payload->alt_ellipsoid);
     if (message->payload->alt_ellipsoid != INT32_MIN) {
         vehicle.t_altitude_ellipsoid->Set_value(message->payload->alt_ellipsoid / 1000.0); // convert mm -> m
     } else {
