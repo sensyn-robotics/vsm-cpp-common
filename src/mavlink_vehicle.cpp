@@ -1734,7 +1734,7 @@ Mavlink_vehicle::Telemetry::On_gps_raw(
     // Debug old FlightEdge alt_ellipsoid value
     int alt_ellipsoid = message->payload->alt_ellipsoid.Get();
     VEHICLE_LOG_INF(vehicle, "alt_ellipsoid [%d]", alt_ellipsoid);
-    if (alt_ellipsoid != INT32_MIN) {
+    if (alt_ellipsoid != INT32_MIN && alt_ellipsoid != 0) {
         vehicle.t_altitude_ellipsoid->Set_value(alt_ellipsoid / 1000.0); // convert mm -> m
     } else {
         vehicle.t_altitude_ellipsoid->Set_value_na();
