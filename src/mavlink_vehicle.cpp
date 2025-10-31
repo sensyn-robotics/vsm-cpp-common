@@ -5,7 +5,6 @@
 #include <mavlink_vehicle.h>
 #include <fstream>
 #include <sstream>
-#include <stdint.h>
 
 constexpr std::chrono::seconds Mavlink_vehicle::WRITE_TIMEOUT;
 constexpr int Mavlink_vehicle::Telemetry::ESTIMATION_RATE_MULTIPLIER;
