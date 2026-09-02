@@ -1642,11 +1642,30 @@ Mavlink_vehicle::Telemetry::On_global_position_int(
     if (current_time_since_boot > prev_time_since_boot) {
         vehicle.t_vertical_speed->Set_value(
             (relative_altitude - prev_altitude) / (current_time_since_boot - prev_time_since_boot));
-    } else if (current_time_since_boot < (prev_time_since_boot - VEHICLE_RESET_TIME_DIFFERENCE)) {
-        VEHICLE_LOG_WRN(vehicle, "Vehicle rebooted, reconnecting.");
-        vehicle.is_active = false;
-        return;
     }
+
+    // Reboot detection. Compare against the highest timestamp seen rather than the
+    // previous one, and require the lower time base to hold: after a real reboot every
+    // sample stays behind the old maximum, while an isolated dip recovers immediately
+    // and would otherwise cost us the vehicle for nothing.
+    if (current_time_since_boot + VEHICLE_RESET_TIME_DIFFERENCE < max_time_since_boot) {
+        reset_confirmations++;
+        if (reset_confirmations >= VEHICLE_RESET_CONFIRMATIONS) {
+            VEHICLE_LOG_WRN(vehicle, "Vehicle rebooted, reconnecting.");
+            vehicle.is_active = false;
+            return;
+        }
+        const int needed = VEHICLE_RESET_CONFIRMATIONS;
+        VEHICLE_LOG_DBG(vehicle,
+            "Time since boot fell back to %.3f s (max seen %.3f s), confirmation %d/%d.",
+            current_time_since_boot, max_time_since_boot, reset_confirmations, needed);
+    } else {
+        reset_confirmations = 0;
+        if (current_time_since_boot > max_time_since_boot) {
+            max_time_since_boot = current_time_since_boot;
+        }
+    }
+
     prev_time_since_boot = current_time_since_boot;
     prev_altitude = relative_altitude;
     vehicle.Commit_to_ucs();
