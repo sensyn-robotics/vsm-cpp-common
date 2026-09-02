@@ -1651,8 +1651,10 @@ Mavlink_vehicle::Telemetry::On_global_position_int(
     if (current_time_since_boot + VEHICLE_RESET_TIME_DIFFERENCE < max_time_since_boot) {
         reset_confirmations++;
         if (reset_confirmations >= VEHICLE_RESET_CONFIRMATIONS) {
-            VEHICLE_LOG_WRN(vehicle, "Vehicle rebooted, reconnecting.");
-            vehicle.is_active = false;
+            if (vehicle.is_active) {
+                VEHICLE_LOG_WRN(vehicle, "Vehicle rebooted, reconnecting.");
+                vehicle.is_active = false;
+            }
             return;
         }
         const int needed = VEHICLE_RESET_CONFIRMATIONS;
