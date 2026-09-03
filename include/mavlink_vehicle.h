@@ -351,10 +351,18 @@ protected:
 
     ugcs::vsm::Vehicle::Command_map current_command_map;
 
-    // Seconds allowed for time since boot to differ before reconnecting the vehicle.
-    // If time_boot_ms difference between two consecutive GLOBAL_POSITION_INT messages
-    // is more than this then consider that vehicle should be recreated.
+    // Seconds that time since boot is allowed to fall behind the highest value seen
+    // before the vehicle is considered rebooted. A rebooted vehicle restarts
+    // time_boot_ms near zero, so it falls behind by far more than this.
     static constexpr float VEHICLE_RESET_TIME_DIFFERENCE = 2.0;
+
+    // Consecutive GLOBAL_POSITION_INT messages that must stay behind by
+    // VEHICLE_RESET_TIME_DIFFERENCE before the vehicle is recreated. After a genuine
+    // reboot every later sample stays behind the old maximum, so the count builds up.
+    // An isolated dip does not: a wall-clock correction on the sending side, or two
+    // senders interleaving their own time bases, recovers on the very next sample and
+    // must not cost us the vehicle.
+    static constexpr int VEHICLE_RESET_CONFIRMATIONS = 3;
 
     bool
     Is_armed() {
@@ -1114,6 +1122,13 @@ protected:
 
         /** Last timestamp in GLOBAL_POSITION_INT message. used to calculate vspeed */
         double prev_time_since_boot = 0;
+
+        /** Highest timestamp seen in GLOBAL_POSITION_INT. Reboot is judged against this
+         * rather than against the previous sample, so a single dip does not count. */
+        double max_time_since_boot = 0;
+
+        /** Consecutive GLOBAL_POSITION_INT messages running behind max_time_since_boot. */
+        int reset_confirmations = 0;
 
         /** Last altitude in GLOBAL_POSITION_INT message. used to calculate vspeed */
         double prev_altitude = 0;
